@@ -1,0 +1,16 @@
+{
+  "name": "Fridge Cookbook",
+  "short_name": "Fridge Cookbook",
+  "description": "High-protein GLP-1 meals from what's already in your fridge.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FBF8F4",
+  "theme_color": "#B86B7A",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/phia-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/phia-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/phia-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
