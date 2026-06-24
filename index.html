@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What Can I Cook? — GLP-1 Fridge Cookbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet">
+<!-- PWA -->
+<meta name="theme-color" content="#B86B7A">
+<meta name="description" content="High-protein GLP-1 meals from what's already in your fridge.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Fridge Cookbook">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/phia-icon-180.png">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/phia-icon-32.png">
+<style>
+/* ============================================================
+   CONFIG IS IN THE <script> AT THE BOTTOM — set GHL + tracker URL there
+   ============================================================ */
+:root{
+  --rose:#B86B7A; --rose-soft:#E7C9CF; --rose-tint:#F7ECEE;
+  --mocha:#6F5B53; --mocha-soft:#A2938C;
+  --gold:#C9A24B; --gold-tint:#F4E9CC;
+  --sage:#7E8C72; --sage-tint:#E7ECE2;
+  --cream:#FBF8F4; --card:#FFFFFF; --line:#EDE4DD;
+  --ink:#3D332E;
+  --shadow:0 1px 2px rgba(61,51,46,.04), 0 8px 24px rgba(61,51,46,.06);
+  --shadow-lift:0 2px 4px rgba(61,51,46,.05), 0 16px 40px rgba(61,51,46,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+  background:var(--cream); color:var(--ink);
+  line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:680px;margin:0 auto;padding:0 18px}
+
+/* ---------- INSTALL PILL ---------- */
+.install-pill{
+  position:fixed; right:16px; bottom:16px; z-index:40; display:none;
+  align-items:center; gap:7px; background:var(--rose); color:#fff; border:none;
+  font-family:inherit; font-size:13.5px; font-weight:700; padding:11px 17px; border-radius:99px;
+  box-shadow:0 6px 20px rgba(184,107,122,.42); cursor:pointer; transition:transform .12s, background .15s;
+}
+.install-pill:hover{background:#a85e6c}
+.install-pill:active{transform:scale(.97)}
+
+/* ---------- EMAIL GATE ---------- */
+#gate{
+  position:fixed; inset:0; z-index:50;
+  background:linear-gradient(160deg,var(--rose-tint),var(--cream) 60%);
+  display:flex; align-items:center; justify-content:center; padding:22px;
+}
+.gate-card{
+  background:var(--card); border:1px solid var(--line); border-radius:24px;
+  box-shadow:var(--shadow-lift); padding:34px 28px; max-width:420px; width:100%;
+  text-align:center;
+}
+.gate-badge{
+  display:inline-block; font-size:11px; font-weight:700; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--rose);
+  background:var(--rose-tint); padding:6px 12px; border-radius:99px; margin-bottom:16px;
+}
+.gate-card h1{font-size:25px; font-weight:800; line-height:1.18; letter-spacing:-.02em; margin-bottom:10px}
+.gate-card p{color:var(--mocha); font-size:14.5px; margin-bottom:22px}
+.gate-card input{
+  width:100%; padding:14px 16px; border:1.5px solid var(--line); border-radius:13px;
+  font-family:inherit; font-size:15px; color:var(--ink); background:var(--cream);
+  transition:border-color .15s,background .15s;
+}
+.gate-card input:focus{outline:none; border-color:var(--rose); background:#fff}
+.gate-card input::placeholder{color:var(--mocha-soft)}
+.gate-btn{
+  width:100%; margin-top:12px; padding:14px; border:none; border-radius:13px;
+  background:var(--rose); color:#fff; font-family:inherit; font-size:15.5px; font-weight:700;
+  cursor:pointer; transition:transform .12s, background .15s;
+}
+.gate-btn:hover{background:#a85e6c}
+.gate-btn:active{transform:scale(.985)}
+.gate-fine{margin-top:14px; font-size:12px; color:var(--mocha-soft)}
+.gate-err{color:var(--rose); font-size:13px; font-weight:600; margin-top:10px; min-height:18px}
+
+/* ---------- HEADER ---------- */
+header{padding:30px 0 8px; text-align:center}
+.kicker{
+  font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--gold); margin-bottom:10px;
+}
+header h1{font-size:27px; font-weight:800; letter-spacing:-.025em; line-height:1.15}
+header h1 em{font-style:normal; color:var(--rose)}
+header .sub{color:var(--mocha); font-size:14.5px; margin-top:8px; max-width:440px; margin-left:auto; margin-right:auto}
+
+/* ---------- FRIDGE PICKER ---------- */
+.panel{
+  background:var(--card); border:1px solid var(--line); border-radius:20px;
+  box-shadow:var(--shadow); padding:20px; margin-top:22px;
+}
+.panel-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:4px}
+.panel-head h2{font-size:15px; font-weight:700}
+.clearbtn{
+  background:none; border:none; color:var(--rose); font-family:inherit;
+  font-size:12.5px; font-weight:600; cursor:pointer; padding:4px 2px;
+}
+.clearbtn:hover{text-decoration:underline}
+.group-label{
+  font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--mocha-soft); margin:16px 0 9px;
+}
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chip{
+  border:1.5px solid var(--line); background:var(--cream); color:var(--mocha);
+  font-family:inherit; font-size:13.5px; font-weight:600;
+  padding:8px 13px; border-radius:99px; cursor:pointer;
+  transition:all .14s; user-select:none;
+}
+.chip:hover{border-color:var(--rose-soft)}
+.chip.on{background:var(--rose); border-color:var(--rose); color:#fff}
+
+/* ---------- CONTROLS ROW ---------- */
+.controls{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:20px; flex-wrap:wrap}
+.tabs{display:flex; gap:6px; background:var(--rose-tint); padding:5px; border-radius:13px}
+.tab{
+  border:none; background:none; font-family:inherit; font-size:13.5px; font-weight:600;
+  color:var(--mocha); padding:8px 13px; border-radius:9px; cursor:pointer; transition:all .14s;
+}
+.tab.on{background:#fff; color:var(--rose); box-shadow:0 1px 4px rgba(61,51,46,.08)}
+.toggle{display:flex; align-items:center; gap:9px; cursor:pointer; user-select:none}
+.toggle span{font-size:13px; font-weight:600; color:var(--mocha)}
+.switch{width:42px; height:24px; border-radius:99px; background:var(--line); position:relative; transition:background .16s; flex-shrink:0}
+.switch::after{content:""; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.18); transition:transform .16s}
+.toggle.on .switch{background:var(--sage)}
+.toggle.on .switch::after{transform:translateX(18px)}
+
+/* ---------- COUNT ---------- */
+.count{font-size:13px; color:var(--mocha-soft); margin:18px 2px 10px; font-weight:600}
+.count b{color:var(--rose)}
+
+/* ---------- RECIPE CARD ---------- */
+.card{
+  background:var(--card); border:1px solid var(--line); border-radius:18px;
+  box-shadow:var(--shadow); margin-bottom:13px; overflow:hidden; transition:box-shadow .18s;
+}
+.card.full{border-color:var(--sage); box-shadow:0 0 0 1px var(--sage-tint), var(--shadow)}
+.card-top{padding:17px 18px; cursor:pointer; display:flex; gap:14px; align-items:flex-start}
+.protein{
+  flex-shrink:0; text-align:center; background:var(--gold-tint); border-radius:13px;
+  padding:9px 11px; min-width:62px;
+}
+.protein .num{font-size:21px; font-weight:800; color:var(--mocha); line-height:1; letter-spacing:-.02em}
+.protein .lbl{font-size:9.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--gold); margin-top:3px}
+.card-main{flex:1; min-width:0}
+.card-main h3{font-size:16px; font-weight:700; line-height:1.25; margin-bottom:7px}
+.meta{display:flex; flex-wrap:wrap; gap:6px; align-items:center}
+.tag{font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:99px; white-space:nowrap}
+.tag.time{background:var(--cream); color:var(--mocha); border:1px solid var(--line)}
+.tag.effort{background:var(--cream); color:var(--mocha); border:1px solid var(--line)}
+.tag.batch{background:var(--sage-tint); color:var(--sage)}
+.tag.have{background:var(--sage); color:#fff}
+.tag.near{background:var(--rose-tint); color:var(--rose)}
+.chev{flex-shrink:0; color:var(--mocha-soft); font-size:13px; align-self:center; transition:transform .2s}
+.card.open .chev{transform:rotate(90deg)}
+.card-body{display:none; padding:0 18px 18px; border-top:1px solid var(--line); margin-top:0}
+.card.open .card-body{display:block; animation:slide .22s ease}
+@keyframes slide{from{opacity:0; transform:translateY(-4px)}to{opacity:1; transform:none}}
+.card-body .blk{margin-top:15px}
+.card-body .blk h4{font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--mocha-soft); margin-bottom:8px}
+.ing-list{display:flex; flex-wrap:wrap; gap:7px}
+.ing{font-size:13px; font-weight:500; padding:5px 11px; border-radius:99px; background:var(--cream); color:var(--mocha); border:1px solid var(--line)}
+.ing.hit{background:var(--sage-tint); color:var(--sage); border-color:var(--sage-tint); font-weight:600}
+.pantry{font-size:12.5px; color:var(--mocha-soft); margin-top:9px; font-style:italic}
+.steps{list-style:none; counter-reset:s}
+.steps li{position:relative; padding:0 0 11px 30px; font-size:14px; color:var(--ink); counter-increment:s}
+.steps li:last-child{padding-bottom:0}
+.steps li::before{
+  content:counter(s); position:absolute; left:0; top:-1px; width:21px; height:21px;
+  background:var(--rose-tint); color:var(--rose); border-radius:50%;
+  font-size:11.5px; font-weight:700; display:flex; align-items:center; justify-content:center;
+}
+
+/* ---------- FOOTER CTA ---------- */
+.cta{
+  background:linear-gradient(155deg,var(--mocha),#5a4942); color:#fff;
+  border-radius:20px; padding:26px 24px; margin:26px 0 40px; text-align:center;
+}
+.cta h3{font-size:18px; font-weight:800; letter-spacing:-.01em; line-height:1.25}
+.cta p{color:rgba(255,255,255,.72); font-size:14px; margin:9px auto 18px; max-width:400px}
+.cta a{
+  display:inline-block; background:var(--gold); color:#3a2f17; text-decoration:none;
+  font-weight:700; font-size:14.5px; padding:13px 24px; border-radius:12px;
+  transition:transform .12s, filter .15s;
+}
+.cta a:hover{filter:brightness(1.05)}
+.cta a:active{transform:scale(.98)}
+.disclaimer{text-align:center; font-size:11.5px; color:var(--mocha-soft); padding-bottom:34px; line-height:1.6}
+
+@media (max-width:480px){
+  header h1{font-size:23px}
+  .controls{flex-direction:column; align-items:stretch}
+  .tabs{justify-content:space-between}
+  .tab{flex:1; padding:9px 4px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+</head>
+<body>
+<button id="installBtn" class="install-pill" aria-label="Install app">⬇ Install app</button>
+
+<!-- APP -->
+<div class="wrap" id="app">
+  <header>
+    <div class="kicker">High-Protein · Good Fats · GLP-1 Friendly</div>
+    <h1>What can I <em>cook</em>?</h1>
+    <p class="sub">Tick what's in your fridge. We'll sort meals by what you can make right now — no more juggling Notes, screenshots, and ten recipe tabs.</p>
+  </header>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2>What's in your fridge?</h2>
+      <button class="clearbtn" id="clearBtn">Clear all</button>
+    </div>
+    <div class="group-label">Protein &amp; dairy</div>
+    <div class="chips" id="grp-protein"></div>
+    <div class="group-label">Veg &amp; carbs</div>
+    <div class="chips" id="grp-veg"></div>
+    <div class="group-label">Sweet &amp; extras</div>
+    <div class="chips" id="grp-sweet"></div>
+  </div>
+
+  <div class="controls">
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-meal="breakfast">Breakfast</button>
+      <button class="tab" data-meal="lunch">Lunch</button>
+      <button class="tab" data-meal="dinner">Dinner</button>
+      <button class="tab" data-meal="dessert">Dessert</button>
+    </div>
+    <div class="toggle" id="quickToggle">
+      <div class="switch"></div><span>Quick only</span>
+    </div>
+  </div>
+
+  <div class="count" id="count"></div>
+  <div id="results"></div>
+
+  <div class="cta">
+    <h3>Loved this? Track the rest.</h3>
+    <p>The Phia GLP-1 tracker logs your injections, protein, hydration, symptoms and progress — then exports a doctor-ready summary in a tap. Lifetime access, $17 once.</p>
+    <a id="trackerLink" href="#" target="_blank" rel="noopener">See the tracker →</a>
+  </div>
+
+  <div class="disclaimer">
+    Tip: good fats keep small GLP-1 portions satisfying — cook with olive oil, dress with extra-virgin.<br>
+    Protein values are estimates for a single serving and will vary with brands and portions.<br>
+    This is general wellness info, not medical or nutrition advice — check with your care team.
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   ⚙️  SET THESE TWO THINGS, THEN HOST THE FILE
+   ============================================================ */
+const CONFIG = {
+  // Where the "See the tracker" button goes — the SALES PAGE, not the app itself:
+  trackerUrl: "https://phialabstudio.com/glp1-wellness-tracker"
+};
+/* ============================================================ */
+
+// ---------- INGREDIENTS (the selectable list) ----------
+const ING = {
+  protein: [
+    ["chicken","Chicken breast"],["eggs","Eggs"],["greek","Greek yogurt"],
+    ["salmon","Salmon"],["turkey","Ground turkey"],["tofu","Tofu"],
+    ["shrimp","Shrimp"],["cottage","Cottage cheese"],["powder","Protein powder"],
+    ["tuna","Canned tuna"],["feta","Feta"],["mozz","Mozzarella"]
+  ],
+  veg: [
+    ["broccoli","Broccoli"],["spinach","Spinach"],["sweetpotato","Sweet potato"],["oats","Oats"],["tomato","Tomato"]
+  ],
+  sweet: [
+    ["berries","Berries"],["honey","Honey"],["choc","Dark chocolate"],["nutbutter","Nut butter"]
+  ]
+};
+const NAME = {}; Object.values(ING).flat().forEach(([k,v])=>NAME[k]=v);
+
+// ---------- 21 RECIPES (protein ≈ per serving) ----------
+const RECIPES = [
+  // BREAKFAST
+  {meal:"breakfast",name:"High-Protein Yogurt Bowl",p:27,time:5,effort:"Easy",batch:false,
+   ing:["greek","berries","oats","nutbutter","honey"],pantry:[],
+   steps:["Spoon Greek yogurt into a bowl.","Top with oats, berries and a drizzle of honey.","Add a spoon of nut butter and stir through."]},
+  {meal:"breakfast",name:"Feta Egg Scramble",p:27,time:10,effort:"Easy",batch:false,
+   ing:["eggs","spinach","cottage","feta"],pantry:["butter (to cook)","salt","pepper"],
+   steps:["Whisk 3 eggs with salt and pepper.","Wilt spinach in a knob of butter over medium heat.","Pour in eggs, fold in cottage cheese off the heat, crumble feta on top."]},
+  {meal:"breakfast",name:"Protein Overnight Oats",p:30,time:5,effort:"Easy",batch:true,
+   ing:["oats","powder","berries"],pantry:["milk"],
+   steps:["Mix oats, a scoop of protein powder and milk in a jar.","Stir until smooth, top with berries.","Chill overnight. Make 3–4 jars at once."]},
+  {meal:"breakfast",name:"Savory Tofu Breakfast Bowl",p:24,time:20,effort:"Medium",batch:true,
+   ing:["tofu","spinach","sweetpotato","eggs","feta"],pantry:["olive oil (to cook)","garlic","spices"],
+   steps:["Roast diced sweet potato in olive oil until soft, ~15 min.","Crumble and pan-fry tofu with garlic and spices.","Wilt spinach, fry an egg, build the bowl and finish with feta."]},
+  {meal:"breakfast",name:"Cottage Cheese Power Bowl",p:26,time:3,effort:"Easy",batch:false,
+   ing:["cottage","berries","nutbutter","honey"],pantry:[],
+   steps:["Add cottage cheese to a bowl.","Top with berries, nut butter and a little honey.","Stir and eat."]},
+  {meal:"breakfast",name:"Feta & Spinach Baked Eggs",p:26,time:20,effort:"Medium",batch:true,
+   ing:["eggs","spinach","feta","tomato"],pantry:["olive oil (to cook)","garlic","salt"],
+   steps:["Soften spinach, garlic and tomato in olive oil in an oven dish.","Crack in 3 eggs, crumble over feta.","Bake until the whites set, ~12 min."]},
+  // LUNCH
+  {meal:"lunch",name:"Lemon Chicken & Broccoli",p:44,time:20,effort:"Medium",batch:true,
+   ing:["chicken","broccoli","feta"],pantry:["olive oil (to cook)","extra virgin olive oil + lemon (to dress)","garlic","salt"],
+   steps:["Sear chicken in olive oil until cooked through.","Steam broccoli until just tender.","Dress with extra virgin olive oil and lemon, crumble feta over. Cook double for tomorrow."]},
+  {meal:"lunch",name:"Tuna & Feta Salad",p:42,time:10,effort:"Easy",batch:false,
+   ing:["tuna","spinach","eggs","feta"],pantry:["extra virgin olive oil + lemon (to dress)","salt"],
+   steps:["Boil an egg, peel and halve.","Toss drained tuna with spinach, feta, extra virgin olive oil and lemon.","Top with the egg, season and serve."]},
+  {meal:"lunch",name:"Turkey Sweet Potato Skillet",p:35,time:25,effort:"Medium",batch:true,
+   ing:["turkey","sweetpotato","spinach","feta"],pantry:["olive oil (to cook)","spices","salt"],
+   steps:["Pan-cook diced sweet potato in olive oil until soft.","Brown ground turkey with spices.","Stir in spinach until wilted, finish with crumbled feta."]},
+  {meal:"lunch",name:"Shrimp & Greens Bowl",p:34,time:20,effort:"Medium",batch:true,
+   ing:["shrimp","broccoli","sweetpotato"],pantry:["olive oil (to cook)","extra virgin olive oil (to dress)","garlic","salt"],
+   steps:["Roast sweet potato cubes in olive oil until tender.","Sauté shrimp with garlic, 3–4 min.","Steam broccoli, build the bowl, drizzle with extra virgin olive oil."]},
+  {meal:"lunch",name:"Greek Yogurt Chicken Bowl",p:45,time:10,effort:"Easy",batch:false,
+   ing:["chicken","greek","spinach","feta"],pantry:["extra virgin olive oil (to drizzle)","lemon","garlic","salt"],
+   steps:["Use pre-cooked or quickly seared chicken.","Mix Greek yogurt with lemon and garlic for a dressing.","Layer over spinach, top with chicken and feta, drizzle extra virgin olive oil."]},
+  {meal:"lunch",name:"Greek Chicken & Feta Bowl",p:47,time:20,effort:"Medium",batch:true,
+   ing:["chicken","tomato","spinach","feta"],pantry:["olive oil (to cook)","extra virgin olive oil + lemon (to dress)","garlic","salt"],
+   steps:["Sear chicken in olive oil with garlic until cooked.","Build a bed of spinach and tomato.","Slice chicken over, crumble feta, dress with extra virgin olive oil and lemon."]},
+  // DINNER
+  {meal:"dinner",name:"Baked Salmon & Broccoli",p:36,time:25,effort:"Medium",batch:true,
+   ing:["salmon","broccoli","sweetpotato"],pantry:["olive oil (to roast)","extra virgin olive oil + lemon (to finish)","salt"],
+   steps:["Roast sweet potato and broccoli in olive oil on a tray.","Add salmon for the last 12–14 min.","Finish with extra virgin olive oil, lemon and a pinch of salt."]},
+  {meal:"dinner",name:"Tofu Stir-Fry",p:21,time:20,effort:"Medium",batch:true,
+   ing:["tofu","broccoli","spinach"],pantry:["olive oil (to cook)","soy sauce","garlic"],
+   steps:["Press and cube tofu, pan-fry in olive oil until golden.","Add broccoli and garlic, stir-fry until tender.","Toss in spinach and soy sauce at the end."]},
+  {meal:"dinner",name:"Greek Turkey Meatballs",p:38,time:30,effort:"Medium",batch:true,
+   ing:["turkey","eggs","spinach","feta"],pantry:["olive oil (to cook)","garlic","spices","salt"],
+   steps:["Mix turkey with an egg, garlic, spices and crumbled feta.","Roll into balls and bake ~18 min.","Serve over spinach softened in olive oil."]},
+  {meal:"dinner",name:"Garlic Shrimp & Sweet Potato Mash",p:34,time:25,effort:"Medium",batch:true,
+   ing:["shrimp","sweetpotato","broccoli"],pantry:["olive oil (to cook)","butter (for mash)","garlic","salt"],
+   steps:["Boil sweet potato, mash with a little butter and salt.","Sauté shrimp with garlic in olive oil, 3–4 min.","Steam broccoli on the side and plate."]},
+  {meal:"dinner",name:"Simple Baked Chicken Tray",p:48,time:30,effort:"Easy",batch:true,
+   ing:["chicken","sweetpotato","broccoli"],pantry:["olive oil (to roast)","spices","salt"],
+   steps:["Toss chicken and sweet potato in olive oil and spices.","Bake 20 min, then add broccoli.","Bake 10 more, until chicken is cooked through."]},
+  {meal:"dinner",name:"Caprese Baked Chicken",p:60,time:30,effort:"Medium",batch:true,
+   ing:["chicken","tomato","mozz"],pantry:["olive oil (to cook)","extra virgin olive oil (to finish)","garlic","salt"],
+   steps:["Rub chicken with olive oil, garlic and salt, bake ~18 min.","Top with sliced tomato and mozzarella.","Bake until the mozzarella melts, finish with extra virgin olive oil."]},
+  // DESSERT
+  {meal:"dessert",name:"Chocolate Protein Mousse",p:30,time:5,effort:"Easy",batch:true,
+   ing:["greek","powder","choc","honey"],pantry:[],
+   steps:["Stir protein powder into Greek yogurt until smooth.","Sweeten with a little honey.","Top with shaved dark chocolate, chill 10 min."]},
+  {meal:"dessert",name:"Berry Cottage Cheese Cream",p:18,time:3,effort:"Easy",batch:false,
+   ing:["cottage","berries","honey","choc"],pantry:[],
+   steps:["Blend cottage cheese smooth (or leave it textured).","Layer with berries and a drizzle of honey.","Grate dark chocolate over the top."]},
+  {meal:"dessert",name:"Peanut Choc Protein Bites",p:10,time:15,effort:"Medium",batch:true,
+   ing:["powder","oats","nutbutter","honey","choc"],pantry:[],
+   steps:["Mix protein powder, oats, nut butter and honey into a dough.","Fold in chopped dark chocolate.","Roll into bites and chill. Protein shown is per 2 bites; makes ~8."]}
+];
+
+// ---------- STATE ----------
+let selected = new Set();
+let meal = "breakfast";
+let quickOnly = false;
+
+// ---------- BUILD CHIPS ----------
+function buildChips(groupKey, containerId){
+  const c = document.getElementById(containerId);
+  ING[groupKey].forEach(([key,label])=>{
+    const b = document.createElement("button");
+    b.className="chip"; b.textContent=label; b.dataset.key=key;
+    b.onclick=()=>{ b.classList.toggle("on"); selected.has(key)?selected.delete(key):selected.add(key); render(); };
+    c.appendChild(b);
+  });
+}
+buildChips("protein","grp-protein");
+buildChips("veg","grp-veg");
+buildChips("sweet","grp-sweet");
+
+// ---------- RENDER ----------
+function render(){
+  const results = document.getElementById("results");
+  let list = RECIPES.filter(r=>r.meal===meal);
+  if(quickOnly) list = list.filter(r=>r.time<=10);
+
+  // score by matched ingredients, sort high→low, never hide anything
+  list = list.map(r=>{
+    const core = r.ing;
+    const hits = core.filter(k=>selected.has(k)).length;
+    const missing = core.filter(k=>!selected.has(k));
+    return {...r, hits, missing, full: selected.size>0 && missing.length===0};
+  }).sort((a,b)=> b.hits-a.hits || b.p-a.p);
+
+  // count line
+  const cnt = document.getElementById("count");
+  if(selected.size===0){
+    cnt.innerHTML = `<b>${list.length}</b> ${meal} recipes — tick your fridge to sort by what you can make now`;
+  } else {
+    const ready = list.filter(r=>r.full).length;
+    cnt.innerHTML = ready>0
+      ? `<b>${ready}</b> you can make right now · ${list.length} ${meal} total`
+      : `Closest ${meal} matches for your fridge`;
+  }
+
+  results.innerHTML = list.map((r,i)=>{
+    const matchTag = r.full
+      ? `<span class="tag have">✓ You've got it all</span>`
+      : (selected.size>0 && r.missing.length===1
+          ? `<span class="tag near">Just need: ${NAME[r.missing[0]]}</span>` : "");
+    const ings = r.ing.map(k=>`<span class="ing ${selected.has(k)?'hit':''}">${NAME[k]}</span>`).join("");
+    const pantry = r.pantry.length ? `<div class="pantry">Plus pantry: ${r.pantry.join(", ")}</div>` : "";
+    const steps = r.steps.map(s=>`<li>${s}</li>`).join("");
+    return `
+      <div class="card ${r.full?'full':''}" data-i="${i}">
+        <div class="card-top" onclick="this.parentElement.classList.toggle('open')">
+          <div class="protein"><div class="num">${r.p}g</div><div class="lbl">protein</div></div>
+          <div class="card-main">
+            <h3>${r.name}</h3>
+            <div class="meta">
+              ${matchTag}
+              <span class="tag time">${r.time} min</span>
+              <span class="tag effort">${r.effort}</span>
+              ${r.batch?'<span class="tag batch">Meal-prep ✓</span>':''}
+            </div>
+          </div>
+          <div class="chev">▶</div>
+        </div>
+        <div class="card-body">
+          <div class="blk"><h4>You'll need</h4><div class="ing-list">${ings}</div>${pantry}</div>
+          <div class="blk"><h4>Method</h4><ol class="steps">${steps}</ol></div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+// ---------- CONTROLS ----------
+document.getElementById("tabs").addEventListener("click",e=>{
+  const t=e.target.closest(".tab"); if(!t)return;
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
+  t.classList.add("on"); meal=t.dataset.meal; render();
+});
+document.getElementById("quickToggle").addEventListener("click",function(){
+  this.classList.toggle("on"); quickOnly=!quickOnly; render();
+});
+document.getElementById("clearBtn").addEventListener("click",()=>{
+  selected.clear();
+  document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on"));
+  render();
+});
+
+// ---------- INIT (no gate — email is captured on your GHL form before this page) ----------
+document.getElementById("trackerLink").href=CONFIG.trackerUrl;
+render();
+</script>
+<script>
+// ---------- PWA: service worker + install prompt ----------
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+}
+let deferredPrompt = null;
+const installBtn = document.getElementById('installBtn');
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
+  if (installBtn) installBtn.style.display = 'flex';
+});
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installBtn.style.display = 'none';
+  });
+}
+window.addEventListener('appinstalled', () => { if (installBtn) installBtn.style.display = 'none'; });
+</script>
+</body>
+</html>
